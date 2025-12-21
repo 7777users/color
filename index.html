@@ -122,14 +122,14 @@
             </span>
           </label>
           <label class="check-row">
-            <input id="modeV2" type="checkbox" />
-            <span class="check-ui" aria-hidden="true"></span>
-            <span class="check-text">
-              <strong>V2</strong>
-              <em>Все цвета, разделенные на две колонки</em>
-            </span>
-          </label>
-        </div>
+          <input id="modeV2" type="checkbox" />
+          <span class="check-ui" aria-hidden="true"></span>
+          <span class="check-text">
+            <strong>V2</strong>
+            <em>Выбранные цвета, разделенные на две колонки</em>
+          </span>
+        </label>
+      </div>
 
         <label class="format-row">
           <span>Формат</span>
@@ -165,12 +165,6 @@
           </tr>
         </thead>
         <tbody id="exportBodySelected"></tbody>
-        <tfoot>
-          <tr>
-            <td colspan="2">ИТОГИ: Количество цветов: <span id="exportCountSelected">0</span> общее количество:</td>
-            <td id="exportTotalSelected">0</td>
-          </tr>
-        </tfoot>
       </table>
     </div>
 
@@ -198,10 +192,12 @@
           <tbody id="exportBodyRight"></tbody>
         </table>
       </div>
-      <div class="export-total-wide">ИТОГИ: Количество цветов: <span id="exportColorCountAll">0</span> общее количество: <span id="exportTotalAll">0</span></div>
     </div>
 
-    <div class="export-summary" id="exportSummary">ИТОГИ: Количество цветов: 0 общее количество: 0</div>
+    <div class="export-summary" id="exportSummary">
+      ИТОГИ: Количество цветов: <span id="exportSummaryColorCount">0</span> общее количество:
+      <span id="exportSummaryQtyTotal">0</span>
+    </div>
   </div>
 
   <script src="script.js"></script>
