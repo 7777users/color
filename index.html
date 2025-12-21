@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Список цветов</title>
 
   <link rel="stylesheet" href="style.css" />
@@ -28,8 +28,6 @@
           <span class="toggle-ui" aria-hidden="true"></span>
           <span>Только выбранные</span>
         </label>
-
-        <span class="chip">Найдено: <strong id="foundCount">0</strong></span>
       </div>
     </div>
 
@@ -65,13 +63,14 @@
   <div class="bottom-bar">
     <div class="bottom-inner">
       <div class="totals">
-        <span>Выбрано цветов: <strong id="selectedCount">0</strong></span>
-        <span>Итого: <strong id="qtyTotal">0</strong></span>
+        <span>Итоги: выбрано цветов: <strong id="selectedCount">0</strong></span>
+        <span>общее количество: <strong id="qtyTotal">0</strong></span>
       </div>
       <div class="actions">
         <button class="btn danger" id="clearBtn">Очистить</button>
         <button class="btn primary" id="downloadBtn">Скачать список</button>
       </div>
+      <div class="version">Версия сайта V2.2</div>
     </div>
   </div>
 
@@ -86,7 +85,6 @@
             <div class="t2" id="modalName"></div>
           </div>
         </div>
-        <button class="btn" id="closeModalBtn">Закрыть</button>
       </div>
 
       <div class="modal-body">
@@ -104,6 +102,7 @@
 
       <div class="modal-foot">
         <button class="btn danger" id="deleteColorBtn" style="display:none;">Удалить цвет</button>
+        <button class="btn" id="closeModalBtn">Закрыть</button>
         <button class="btn primary" id="saveBtn">Сохранить</button>
       </div>
     </div>
