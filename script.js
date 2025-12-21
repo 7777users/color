@@ -276,6 +276,12 @@ function setExportMode(mode){
   saveExportBtn.disabled = !exportMode;
 }
 
+function updateExportSummary(colorCount, qtyTotal){
+  const summaryEl = document.getElementById("exportSummary");
+  if (!summaryEl) return;
+  summaryEl.textContent = `ИТОГИ: Количество цветов: ${colorCount} общее количество: ${qtyTotal}`;
+}
+
 function buildExportSheet(mode){
   const selectedSection = document.getElementById("exportSelectedSection");
   const allSection = document.getElementById("exportAllSection");
