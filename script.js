@@ -302,6 +302,7 @@ function buildExportSheet(mode){
     const leftBody = document.getElementById("exportBodyLeft");
     const rightBody = document.getElementById("exportBodyRight");
     const totalEl = document.getElementById("exportTotalAll");
+    const colorCountEl = document.getElementById("exportColorCountAll");
     leftBody.innerHTML = "";
     rightBody.innerHTML = "";
 
@@ -341,12 +342,13 @@ function buildExportSheet(mode){
     fill(leftItems, leftBody);
     fill(rightItems, rightBody);
     totalEl.textContent = String(total);
-    updateExportSummary(all.length, total);
+    colorCountEl.textContent = String(all.length);
     return;
   }
 
   const body = document.getElementById("exportBodySelected");
   const exportTotal = document.getElementById("exportTotalSelected");
+  const exportCount = document.getElementById("exportCountSelected");
   body.innerHTML = "";
 
   const selected = getSelected();
@@ -361,7 +363,7 @@ function buildExportSheet(mode){
     tr.appendChild(td1);
     body.appendChild(tr);
     exportTotal.textContent = "0";
-    updateExportSummary(0, 0);
+    exportCount.textContent = "0";
     return;
   }
 
@@ -376,7 +378,7 @@ function buildExportSheet(mode){
   });
 
   exportTotal.textContent = String(total);
-  updateExportSummary(selected.length, total);
+  exportCount.textContent = String(selected.length);
 }
 
 function getExportScale(){
