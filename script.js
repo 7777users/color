@@ -301,8 +301,9 @@ function buildExportSheet(mode){
   const stamp = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   dateEl.textContent = `Дата: ${stamp}`;
 
-  let colorCount = 0;
-  let qtyTotal = 0;
+  const selectedForTotals = getSelected();
+  const colorCount = selectedForTotals.length;
+  const qtyTotal = selectedForTotals.reduce((a, x) => a + x.qty, 0);
 
   if (mode === "v2") {
     const leftBody = document.getElementById("exportBodyLeft");
@@ -310,11 +311,9 @@ function buildExportSheet(mode){
     leftBody.innerHTML = "";
     rightBody.innerHTML = "";
 
-    const selected = getSelected();
-    colorCount = selected.length;
-    qtyTotal = selected.reduce((a, x) => a + x.qty, 0);
+    const all = getAllItems();
 
-    if (selected.length === 0) {
+    if (all.length === 0) {
       const emptyRow = document.createElement("tr");
       const emptyCell = document.createElement("td");
       emptyCell.colSpan = 3;
@@ -326,9 +325,9 @@ function buildExportSheet(mode){
       return;
     }
 
-    const half = Math.ceil(selected.length / 2);
-    const leftItems = selected.slice(0, half);
-    const rightItems = selected.slice(half);
+    const half = Math.ceil(all.length / 2);
+    const leftItems = all.slice(0, half);
+    const rightItems = all.slice(half);
     const rowCount = Math.max(leftItems.length, rightItems.length);
 
     const fill = (items, body) => {
@@ -342,7 +341,8 @@ function buildExportSheet(mode){
         if (item) {
           tdId.textContent = String(item.id);
           tdName.textContent = item.name;
-          tdQty.textContent = String(item.qty);
+          const qty = getQty(item.id);
+          tdQty.textContent = qty > 0 ? String(qty) : " ";
         } else {
           tdId.textContent = " ";
           tdName.textContent = " ";
@@ -365,9 +365,7 @@ function buildExportSheet(mode){
   const body = document.getElementById("exportBodySelected");
   body.innerHTML = "";
 
-  const selected = getSelected();
-  colorCount = selected.length;
-  qtyTotal = selected.reduce((a, x) => a + x.qty, 0);
+  const selected = selectedForTotals;
 
   if (selected.length === 0) {
     const tr = document.createElement("tr");
