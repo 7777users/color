@@ -279,7 +279,7 @@ function setExportMode(mode){
 function updateExportSummary(colorCount, qtyTotal){
   const summaryEl = document.getElementById("exportSummary");
   if (!summaryEl) return;
-  summaryEl.textContent = `ИТОГИ: Количество цветов: ${colorCount} общее количество: ${qtyTotal}`;
+  summaryEl.textContent = `ИТОГИ: КоличеККККККство цветов: ${colorCount} общее колКККККичество: ${qtyTotal}`;
 }
 
 function buildExportSheet(mode){
