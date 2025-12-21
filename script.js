@@ -278,8 +278,11 @@ function setExportMode(mode){
 
 function updateExportSummary(colorCount, qtyTotal){
   const summaryEl = document.getElementById("exportSummary");
-  if (!summaryEl) return;
-  summaryEl.textContent = `ИТОГИ: КоличеККККККство цветов: ${colorCount} общее колКККККичество: ${qtyTotal}`;
+  const colorCountEl = document.getElementById("exportSummaryColorCount");
+  const qtyTotalEl = document.getElementById("exportSummaryQtyTotal");
+  if (!summaryEl || !colorCountEl || !qtyTotalEl) return;
+  colorCountEl.textContent = String(colorCount);
+  qtyTotalEl.textContent = String(qtyTotal);
 }
 
 function buildExportSheet(mode){
@@ -298,20 +301,36 @@ function buildExportSheet(mode){
   const stamp = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   dateEl.textContent = `Дата: ${stamp}`;
 
+  let colorCount = 0;
+  let qtyTotal = 0;
+
   if (mode === "v2") {
     const leftBody = document.getElementById("exportBodyLeft");
     const rightBody = document.getElementById("exportBodyRight");
-    const totalEl = document.getElementById("exportTotalAll");
-    const colorCountEl = document.getElementById("exportColorCountAll");
     leftBody.innerHTML = "";
     rightBody.innerHTML = "";
 
-    const all = getAllItems();
-    const half = Math.ceil(all.length / 2);
-    const leftItems = all.slice(0, half);
-    const rightItems = all.slice(half);
+    const selected = getSelected();
+    colorCount = selected.length;
+    qtyTotal = selected.reduce((a, x) => a + x.qty, 0);
+
+    if (selected.length === 0) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 3;
+      emptyCell.textContent = "Нет данных.";
+      emptyCell.style.color = "#555";
+      emptyRow.appendChild(emptyCell);
+      leftBody.appendChild(emptyRow);
+      updateExportSummary(colorCount, qtyTotal);
+      return;
+    }
+
+    const half = Math.ceil(selected.length / 2);
+    const leftItems = selected.slice(0, half);
+    const rightItems = selected.slice(half);
     const rowCount = Math.max(leftItems.length, rightItems.length);
-    let total = 0;
+
     const fill = (items, body) => {
       for (let i = 0; i < rowCount; i++) {
         const item = items[i];
@@ -321,11 +340,9 @@ function buildExportSheet(mode){
         const tdQty = document.createElement("td");
 
         if (item) {
-          const qty = getQty(item.id);
-          total += qty;
           tdId.textContent = String(item.id);
           tdName.textContent = item.name;
-          tdQty.textContent = qty > 0 ? String(qty) : " ";
+          tdQty.textContent = String(item.qty);
         } else {
           tdId.textContent = " ";
           tdName.textContent = " ";
@@ -341,18 +358,16 @@ function buildExportSheet(mode){
 
     fill(leftItems, leftBody);
     fill(rightItems, rightBody);
-    totalEl.textContent = String(total);
-    colorCountEl.textContent = String(all.length);
+    updateExportSummary(colorCount, qtyTotal);
     return;
   }
 
   const body = document.getElementById("exportBodySelected");
-  const exportTotal = document.getElementById("exportTotalSelected");
-  const exportCount = document.getElementById("exportCountSelected");
   body.innerHTML = "";
 
   const selected = getSelected();
-  let total = 0;
+  colorCount = selected.length;
+  qtyTotal = selected.reduce((a, x) => a + x.qty, 0);
 
   if (selected.length === 0) {
     const tr = document.createElement("tr");
@@ -362,13 +377,11 @@ function buildExportSheet(mode){
     td1.style.color = "#555";
     tr.appendChild(td1);
     body.appendChild(tr);
-    exportTotal.textContent = "0";
-    exportCount.textContent = "0";
+    updateExportSummary(colorCount, qtyTotal);
     return;
   }
 
   selected.forEach(item => {
-    total += item.qty;
     const tr = document.createElement("tr");
     const tdId = document.createElement("td");   tdId.textContent = String(item.id);
     const tdName = document.createElement("td"); tdName.textContent = item.name;
@@ -377,8 +390,7 @@ function buildExportSheet(mode){
     body.appendChild(tr);
   });
 
-  exportTotal.textContent = String(total);
-  exportCount.textContent = String(selected.length);
+  updateExportSummary(colorCount, qtyTotal);
 }
 
 function getExportScale(){
