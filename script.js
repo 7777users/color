@@ -276,6 +276,12 @@ function setExportMode(mode){
   saveExportBtn.disabled = !exportMode;
 }
 
+function updateExportSummary(colorCount, qtyTotal){
+  const summaryEl = document.getElementById("exportSummary");
+  if (!summaryEl) return;
+  summaryEl.textContent = `ИТОГИ: Количество цветов: ${colorCount} общее количество: ${qtyTotal}`;
+}
+
 function buildExportSheet(mode){
   const selectedSection = document.getElementById("exportSelectedSection");
   const allSection = document.getElementById("exportAllSection");
@@ -300,11 +306,13 @@ function buildExportSheet(mode){
     rightBody.innerHTML = "";
 
     const all = getAllItems();
-    const leftItems = all.slice(0, 38);
-    const rightItems = all.slice(38, 76);
+    const half = Math.ceil(all.length / 2);
+    const leftItems = all.slice(0, half);
+    const rightItems = all.slice(half);
+    const rowCount = Math.max(leftItems.length, rightItems.length);
     let total = 0;
     const fill = (items, body) => {
-      for (let i = 0; i < 38; i++) {
+      for (let i = 0; i < rowCount; i++) {
         const item = items[i];
         const tr = document.createElement("tr");
         const tdId = document.createElement("td");
@@ -316,11 +324,11 @@ function buildExportSheet(mode){
           total += qty;
           tdId.textContent = String(item.id);
           tdName.textContent = item.name;
-          tdQty.textContent = qty > 0 ? String(qty) : "";
+          tdQty.textContent = qty > 0 ? String(qty) : " ";
         } else {
-          tdId.textContent = "";
-          tdName.textContent = "";
-          tdQty.textContent = "";
+          tdId.textContent = " ";
+          tdName.textContent = " ";
+          tdQty.textContent = " ";
         }
 
         tr.appendChild(tdId);
@@ -333,6 +341,7 @@ function buildExportSheet(mode){
     fill(leftItems, leftBody);
     fill(rightItems, rightBody);
     totalEl.textContent = String(total);
+    updateExportSummary(all.length, total);
     return;
   }
 
@@ -352,6 +361,7 @@ function buildExportSheet(mode){
     tr.appendChild(td1);
     body.appendChild(tr);
     exportTotal.textContent = "0";
+    updateExportSummary(0, 0);
     return;
   }
 
@@ -366,12 +376,28 @@ function buildExportSheet(mode){
   });
 
   exportTotal.textContent = String(total);
+  updateExportSummary(selected.length, total);
+}
+
+function getExportScale(){
+  const dpr = window.devicePixelRatio || 1;
+  return Math.min(3, Math.max(2, dpr));
+}
+
+async function renderExportCanvas(mode){
+  buildExportSheet(mode);
+  const node = document.getElementById("exportSheet");
+  const canvas = await html2canvas(node, {
+    scale: getExportScale(),
+    backgroundColor: "#ffffff",
+    useCORS: true,
+    imageTimeout: 0
+  });
+  return canvas;
 }
 
 async function makeJpegBlob(mode){
-  buildExportSheet(mode);
-  const node = document.getElementById("exportSheet");
-  const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff" });
+  const canvas = await renderExportCanvas(mode);
   const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.92));
   return blob;
 }
@@ -406,9 +432,7 @@ async function sharePhotoIOS(mode){
 }
 
 async function downloadPDF(mode){
-  buildExportSheet(mode);
-  const node = document.getElementById("exportSheet");
-  const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff" });
+  const canvas = await renderExportCanvas(mode);
   const imgData = canvas.toDataURL("image/png");
   const { jsPDF } = window.jspdf;
 
