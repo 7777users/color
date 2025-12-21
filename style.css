@@ -446,19 +446,110 @@ input[type="number"]:focus{
   padding: 12px;
   display:flex;
   flex-direction:column;
+  gap:12px;
+}
+.export-modes{
+  display:flex;
+  flex-direction:column;
   gap:10px;
 }
-.sheet-body .btn{ width:100%; padding: 14px 12px; font-weight: 950; }
+.check-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(34,48,68,.85);
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+  cursor:pointer;
+  user-select:none;
+}
+.check-row input{ display:none; }
+.check-ui{
+  width:22px; height:22px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,.35);
+  background: rgba(255,255,255,.04);
+  position: relative;
+  flex-shrink:0;
+}
+.check-ui::after{
+  content:"";
+  width: 8px; height: 8px;
+  border-radius: 3px;
+  background: rgba(78,161,255,.95);
+  position:absolute;
+  top:5px; left:5px;
+  opacity:0;
+  transform: scale(.6);
+  transition:.15s ease;
+}
+.check-row input:checked + .check-ui{
+  border-color: rgba(78,161,255,.95);
+  background: rgba(78,161,255,.12);
+}
+.check-row input:checked + .check-ui::after{ opacity:1; transform: scale(1); }
+.check-text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  font-weight: 900;
+}
+.check-text strong{ font-size: 14px; color: var(--text); }
+.check-text em{ font-style: normal; color: var(--muted); font-size: 13px; font-weight: 800; }
+.format-row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap:12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(34,48,68,.85);
+  background: rgba(255,255,255,.02);
+  font-weight: 850;
+  color: var(--muted);
+}
+.format-row select{
+  width: 170px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(34,48,68,.85);
+  background: rgba(14,22,38,.9);
+  color: var(--text);
+  font-weight: 900;
+}
+.export-note{
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 2px;
+  font-weight: 800;
+}
 .sheet-foot{
   padding: 12px;
   border-top: 1px solid rgba(34,48,68,.75);
+}
+.foot-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.foot-actions .btn{
+  width: calc(50% - 5px);
+  padding: 14px 12px;
+  font-weight: 950;
+}
+.foot-actions .btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
 }
 
 /* export sheet hidden */
 #exportSheet{
   position: fixed;
   left: -99999px; top: 0;
-  width: 900px;
+  width: 1100px;
   background: #ffffff;
   color:#111;
   padding: 24px;
@@ -471,13 +562,35 @@ input[type="number"]:focus{
   border-collapse: collapse;
   font-size: 14px;
 }
-#exportTable th, #exportTable td{
+#exportTableSelected,
+#exportTableLeft,
+#exportTableRight{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+#exportTable th, #exportTable td,
+#exportTableSelected th, #exportTableSelected td,
+#exportTableLeft th, #exportTableLeft td,
+#exportTableRight th, #exportTableRight td{
   border: 1px solid #333;
   padding: 10px 10px;
   text-align: left;
 }
-#exportTable th{ background: #f0f0f0; font-weight: 700; }
-#exportTable tfoot td{ font-weight: 700; background: #fafafa; }
+#exportTable th, #exportTableSelected th,
+#exportTableLeft th, #exportTableRight th{ background: #f0f0f0; font-weight: 700; }
+#exportTable tfoot td, #exportTableSelected tfoot td{ font-weight: 700; background: #fafafa; }
+.export-section{ display:none; }
+.export-section.active{ display:block; }
+.all-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.export-total-wide{
+  margin-top: 12px;
+  font-weight: 800;
+}
 
 @media (max-width: 520px){
   .toprow{ flex-direction: column; align-items: stretch; }

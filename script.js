@@ -98,10 +98,13 @@ const deleteColorBtn = document.getElementById("deleteColorBtn");
 const sheet = document.getElementById("sheet");
 const downloadBtn = document.getElementById("downloadBtn");
 const closeSheetBtn = document.getElementById("closeSheetBtn");
-const savePhotoBtn = document.getElementById("savePhotoBtn");
-const savePdfBtn = document.getElementById("savePdfBtn");
+const saveExportBtn = document.getElementById("saveExportBtn");
+const modeV1 = document.getElementById("modeV1");
+const modeV2 = document.getElementById("modeV2");
+const exportFormat = document.getElementById("exportFormat");
 
 let activeItem = null;
+let exportMode = null; // "v1" | "v2" | null
 
 function keyForQty(id){ return "qty_id_" + String(id); }
 function normalize(s){ return String(s ?? "").toLowerCase().trim().replaceAll("ё","е"); }
@@ -269,20 +272,67 @@ function deleteCustomWithConfirm(){
 overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
 window.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.style.display === "flex") closeModal(); });
 
-function buildExportSheet(){
-  const body = document.getElementById("exportBody");
+function setExportMode(mode){
+  exportMode = mode;
+  modeV1.checked = exportMode === "v1";
+  modeV2.checked = exportMode === "v2";
+  saveExportBtn.disabled = !exportMode;
+}
+
+function buildExportSheet(mode){
+  const selectedSection = document.getElementById("exportSelectedSection");
+  const allSection = document.getElementById("exportAllSection");
+
+  selectedSection.classList.toggle("active", mode === "v1");
+  allSection.classList.toggle("active", mode === "v2");
+
+  const titleEl = document.getElementById("exportTitle");
   const dateEl = document.getElementById("exportDate");
-  const exportTotal = document.getElementById("exportTotal");
+  titleEl.textContent = mode === "v2" ? "Список (все цвета)" : "Список (только выбранные)";
 
   const now = new Date();
   const pad = (n)=> String(n).padStart(2,"0");
   const stamp = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   dateEl.textContent = `Дата: ${stamp}`;
 
-  const selected = getSelected();
+  if (mode === "v2") {
+    const leftBody = document.getElementById("exportBodyLeft");
+    const rightBody = document.getElementById("exportBodyRight");
+    const totalEl = document.getElementById("exportTotalAll");
+    leftBody.innerHTML = "";
+    rightBody.innerHTML = "";
+
+    const all = getAllItems();
+    const leftItems = all.filter(x => x.id <= 38);
+    const rightItems = all.filter(x => x.id > 38);
+
+    let total = 0;
+    const fill = (items, body) => {
+      items.forEach(item => {
+        const qty = getQty(item.id);
+        total += qty;
+        const tr = document.createElement("tr");
+        const tdId = document.createElement("td");   tdId.textContent = String(item.id);
+        const tdName = document.createElement("td"); tdName.textContent = item.name;
+        const tdQty = document.createElement("td");  tdQty.textContent = String(qty);
+        tr.appendChild(tdId); tr.appendChild(tdName); tr.appendChild(tdQty);
+        body.appendChild(tr);
+      });
+    };
+
+    fill(leftItems, leftBody);
+    fill(rightItems, rightBody);
+    totalEl.textContent = String(total);
+    return;
+  }
+
+  const body = document.getElementById("exportBodySelected");
+  const exportTotal = document.getElementById("exportTotalSelected");
   body.innerHTML = "";
 
+  const selected = getSelected();
   let total = 0;
+
   if (selected.length === 0) {
     const tr = document.createElement("tr");
     const td1 = document.createElement("td");
@@ -308,8 +358,8 @@ function buildExportSheet(){
   exportTotal.textContent = String(total);
 }
 
-async function makeJpegBlob(){
-  buildExportSheet();
+async function makeJpegBlob(mode){
+  buildExportSheet(mode);
   const node = document.getElementById("exportSheet");
   const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff" });
   const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.92));
@@ -317,8 +367,8 @@ async function makeJpegBlob(){
 }
 
 // iPhone Share Sheet с файлом (без ссылок). Нужен HTTPS.
-async function sharePhotoIOS(){
-  const blob = await makeJpegBlob();
+async function sharePhotoIOS(mode){
+  const blob = await makeJpegBlob(mode);
   if (!blob) { alert("Не получилось создать фото"); return; }
 
   const file = new File([blob], "spisok.jpg", { type: "image/jpeg" });
@@ -345,8 +395,8 @@ async function sharePhotoIOS(){
   alert("Чтобы отправка/сохранение работали без ссылок на iPhone — нужен HTTPS. Сейчас открыл фото отдельно.");
 }
 
-async function downloadPDF(){
-  buildExportSheet();
+async function downloadPDF(mode){
+  buildExportSheet(mode);
   const node = document.getElementById("exportSheet");
   const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff" });
   const imgData = canvas.toDataURL("image/png");
@@ -375,7 +425,10 @@ async function downloadPDF(){
 }
 
 // sheet controls
-function openSheet(){ sheet.style.display = "flex"; }
+function openSheet(){
+  setExportMode(null);
+  sheet.style.display = "flex";
+}
 function closeSheet(){ sheet.style.display = "none"; }
 sheet.addEventListener("click", (e) => { if (e.target === sheet) closeSheet(); });
 
@@ -429,16 +482,6 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 downloadBtn.addEventListener("click", openSheet);
 closeSheetBtn.addEventListener("click", closeSheet);
 
-// важно: сначала share, потом закрыть sheet
-savePhotoBtn.addEventListener("click", async () => {
-  try { await sharePhotoIOS(); }
-  finally { closeSheet(); }
-});
-savePdfBtn.addEventListener("click", async () => {
-  try { await downloadPDF(); }
-  finally { closeSheet(); }
-});
-
 addCustomBtn.addEventListener("click", addCustom);
 customName.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCustom(); });
 customHex.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCustom(); });
@@ -453,5 +496,27 @@ q10.addEventListener("click", () => addDelta(10));
 q0.addEventListener("click", clearModalQtyWithConfirm);
 
 deleteColorBtn.addEventListener("click", deleteCustomWithConfirm);
+
+modeV1.addEventListener("change", () => {
+  if (modeV1.checked) setExportMode("v1");
+  else if (modeV2.checked) setExportMode("v2");
+  else setExportMode(null);
+});
+modeV2.addEventListener("change", () => {
+  if (modeV2.checked) setExportMode("v2");
+  else if (modeV1.checked) setExportMode("v1");
+  else setExportMode(null);
+});
+
+saveExportBtn.addEventListener("click", async () => {
+  if (!exportMode) { alert("Выберите V1 или V2"); return; }
+  const format = exportFormat.value;
+  try{
+    if (format === "photo") await sharePhotoIOS(exportMode);
+    else await downloadPDF(exportMode);
+  } finally {
+    closeSheet();
+  }
+});
 
 render();
