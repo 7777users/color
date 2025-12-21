@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Список цветов</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="toprow">
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="Поиск по ID или названию..." />
+        </div>
+        <button class="btn" id="clearSearchBtn">Сброс</button>
+      </div>
+
+      <div class="filters">
+        <label class="switch">
+          <input id="onlySelected" type="checkbox" />
+          <span class="toggle-ui" aria-hidden="true"></span>
+          <span>Только выбранные</span>
+        </label>
+
+        <span class="chip">Найдено: <strong id="foundCount">0</strong></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="grid-head">
+        <div>ID</div>
+        <div>Цвет</div>
+        <div>Название</div>
+        <div class="head-right">Выбор</div>
+      </div>
+
+      <div class="rows" id="rows"></div>
+
+      <div class="custom">
+        <p class="custom-title">Добавить кастомный цвет</p>
+
+        <div class="custom-grid">
+          <input id="customName" type="text" placeholder="Название (например: сиреневый металлик)" />
+          <div class="custom-color">
+            <input id="customPicker" type="color" value="#9ca3af" title="Выбрать цвет" />
+            <input id="customHex" class="hex" type="text" placeholder="#RRGGBB" value="#9ca3af" />
+          </div>
+          <button class="btn primary" id="addCustomBtn">Добавить</button>
+        </div>
+
+        <div class="custom-note">
+          iPhone: чтобы “Сохранить изображение” и “WhatsApp” работали без ссылок — открывай сайт по HTTPS.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <div class="totals">
+        <span>Выбрано цветов: <strong id="selectedCount">0</strong></span>
+        <span>Итого: <strong id="qtyTotal">0</strong></span>
+      </div>
+      <div class="actions">
+        <button class="btn danger" id="clearBtn">Очистить</button>
+        <button class="btn primary" id="downloadBtn">Скачать список</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Qty Modal -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">
+          <div class="swatch" id="modalSwatch"></div>
+          <div class="info">
+            <div class="t1" id="modalId"></div>
+            <div class="t2" id="modalName"></div>
+          </div>
+        </div>
+        <button class="btn" id="closeModalBtn">Закрыть</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="modalQty" type="number" min="0" step="1" inputmode="numeric" placeholder="Количество" />
+
+        <div class="quick-grid">
+          <button class="btn" id="q1">+1</button>
+          <button class="btn" id="q5">+5</button>
+          <button class="btn" id="q3">+3</button>
+          <button class="btn" id="q10">+10</button>
+        </div>
+
+        <button class="btn danger" id="q0">Очистить количество</button>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn danger" id="deleteColorBtn" style="display:none;">Удалить цвет</button>
+        <button class="btn primary" id="saveBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download Action Sheet -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-card">
+      <div class="sheet-head">Скачать список</div>
+      <div class="sheet-body">
+        <button class="btn primary" id="savePhotoBtn">Сохранить как фото</button>
+        <button class="btn primary" id="savePdfBtn">Сохранить как PDF</button>
+      </div>
+      <div class="sheet-foot">
+        <button class="btn" id="closeSheetBtn">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export (hidden generator) -->
+  <div id="exportSheet" aria-hidden="true">
+    <p class="title">Список</p>
+    <p class="date" id="exportDate"></p>
+
+    <table id="exportTable">
+      <thead>
+        <tr>
+          <th style="width:12%;">ID</th>
+          <th style="width:58%;">Название</th>
+          <th style="width:30%;">Кол-во</th>
+        </tr>
+      </thead>
+      <tbody id="exportBody"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">Итого</td>
+          <td id="exportTotal">0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
