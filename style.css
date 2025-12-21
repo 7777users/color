@@ -307,7 +307,7 @@ input[type="color"]{
   display:flex;
   gap:10px;
   align-items:center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 .totals{
@@ -450,8 +450,9 @@ input[type="number"]:focus{
 }
 .export-modes{
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   gap:10px;
+  flex-wrap: wrap;
 }
 .check-row{
   display:flex;
@@ -465,6 +466,9 @@ input[type="number"]:focus{
   user-select:none;
 }
 .check-row input{ display:none; }
+.export-modes .check-row{
+  flex: 1 1 48%;
+}
 .check-ui{
   width:22px; height:22px;
   border-radius: 6px;
@@ -545,6 +549,13 @@ input[type="number"]:focus{
   cursor:not-allowed;
 }
 
+.version{
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 /* export sheet hidden */
 #exportSheet{
   position: fixed;
@@ -610,6 +621,7 @@ input[type="number"]:focus{
   .swatch{ width: 34px; height: 34px; border-radius: 12px; }
   .modal-foot .btn{ width: 100%; }
   .custom-grid{ grid-template-columns: 1fr; }
+  .version{ width: 100%; text-align: right; }
 }
 
 

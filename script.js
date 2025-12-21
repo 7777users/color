@@ -72,7 +72,6 @@ const rowsEl = document.getElementById("rows");
 const searchInput = document.getElementById("searchInput");
 const clearSearchBtn = document.getElementById("clearSearchBtn");
 const onlySelectedEl = document.getElementById("onlySelected");
-const foundCountEl = document.getElementById("foundCount");
 const selectedCountEl = document.getElementById("selectedCount");
 const qtyTotalEl = document.getElementById("qtyTotal");
 
@@ -169,8 +168,6 @@ function render(){
   rowsEl.innerHTML = "";
   let filtered = getAllItems().filter(it => matches(it, q));
   if (onlySel) filtered = filtered.filter(it => getQty(it.id) > 0);
-
-  foundCountEl.textContent = String(filtered.length);
 
   filtered.forEach(it => {
     const row = document.createElement("div");
@@ -288,7 +285,7 @@ function buildExportSheet(mode){
 
   const titleEl = document.getElementById("exportTitle");
   const dateEl = document.getElementById("exportDate");
-  titleEl.textContent = mode === "v2" ? "Список (все цвета)" : "Список (только выбранные)";
+  titleEl.textContent = "Список";
 
   const now = new Date();
   const pad = (n)=> String(n).padStart(2,"0");
@@ -303,21 +300,34 @@ function buildExportSheet(mode){
     rightBody.innerHTML = "";
 
     const all = getAllItems();
-    const leftItems = all.filter(x => x.id <= 38);
-    const rightItems = all.filter(x => x.id > 38);
-
+    const leftItems = all.slice(0, 38);
+    const rightItems = all.slice(38, 76);
     let total = 0;
     const fill = (items, body) => {
-      items.forEach(item => {
-        const qty = getQty(item.id);
-        total += qty;
+      for (let i = 0; i < 38; i++) {
+        const item = items[i];
         const tr = document.createElement("tr");
-        const tdId = document.createElement("td");   tdId.textContent = String(item.id);
-        const tdName = document.createElement("td"); tdName.textContent = item.name;
-        const tdQty = document.createElement("td");  tdQty.textContent = String(qty);
-        tr.appendChild(tdId); tr.appendChild(tdName); tr.appendChild(tdQty);
+        const tdId = document.createElement("td");
+        const tdName = document.createElement("td");
+        const tdQty = document.createElement("td");
+
+        if (item) {
+          const qty = getQty(item.id);
+          total += qty;
+          tdId.textContent = String(item.id);
+          tdName.textContent = item.name;
+          tdQty.textContent = qty > 0 ? String(qty) : "";
+        } else {
+          tdId.textContent = "";
+          tdName.textContent = "";
+          tdQty.textContent = "";
+        }
+
+        tr.appendChild(tdId);
+        tr.appendChild(tdName);
+        tr.appendChild(tdQty);
         body.appendChild(tr);
-      });
+      }
     };
 
     fill(leftItems, leftBody);
@@ -337,7 +347,7 @@ function buildExportSheet(mode){
     const tr = document.createElement("tr");
     const td1 = document.createElement("td");
     td1.colSpan = 3;
-    td1.textContent = "Ничего не выбрано.";
+    td1.textContent = "Нет данных.";
     td1.style.color = "#555";
     tr.appendChild(td1);
     body.appendChild(tr);
