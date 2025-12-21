@@ -549,13 +549,6 @@ input[type="number"]:focus{
   cursor:not-allowed;
 }
 
-.version{
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
 /* export sheet hidden */
 #exportSheet{
   position: fixed;
@@ -580,6 +573,12 @@ input[type="number"]:focus{
   border-collapse: collapse;
   font-size: 14px;
 }
+#exportTable,
+#exportTableSelected,
+#exportTableLeft,
+#exportTableRight{
+  table-layout: fixed;
+}
 #exportTable th, #exportTable td,
 #exportTableSelected th, #exportTableSelected td,
 #exportTableLeft th, #exportTableLeft td,
@@ -587,9 +586,17 @@ input[type="number"]:focus{
   border: 1px solid #333;
   padding: 10px 10px;
   text-align: left;
+  height: 42px;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #exportTable th, #exportTableSelected th,
-#exportTableLeft th, #exportTableRight th{ background: #f0f0f0; font-weight: 700; }
+#exportTableLeft th, #exportTableRight th{
+  background: #f0f0f0;
+  font-weight: 700;
+}
 #exportTable tfoot td, #exportTableSelected tfoot td{ font-weight: 700; background: #fafafa; }
 .export-section{ display:none; }
 .export-section.active{ display:block; }
@@ -601,6 +608,16 @@ input[type="number"]:focus{
 .export-total-wide{
   margin-top: 12px;
   font-weight: 800;
+}
+.export-summary{
+  margin-top: 16px;
+  font-weight: 900;
+  font-size: 14px;
+  color:#111;
+  background: #f8f8f8;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 12px;
 }
 
 @media (max-width: 520px){
