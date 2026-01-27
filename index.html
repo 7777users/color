@@ -1,205 +1,1322 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Список цветов</title>
-
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --border: #d2d2d7;
+      --accent: #007aff;
+      --accent-hover: #0051d5;
+      --danger: #ff3b30;
+      --success: #34c759;
+      --shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 12px;
+      padding-bottom: 140px;
+    }
+
+    .header {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      outline: none;
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    .btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+      color: var(--text);
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .toggle {
+      position: relative;
+      width: 51px;
+      height: 31px;
+      background: var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-input {
+      display: none;
+    }
+
+    .toggle-input:checked + .toggle {
+      background: var(--accent);
+    }
+
+    .toggle-input:checked + .toggle::after {
+      transform: translateX(20px);
+    }
+
+    .toggle-label {
+      font-size: 15px;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .color-grid {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .color-item {
+      display: grid;
+      grid-template-columns: 48px 36px auto 88px;
+      padding-left: 12px;
+      padding-right: 12px;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--card);
+      transition: background 0.2s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .color-item:hover {
+      background: var(--bg);
+    }
+
+    .color-id {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .color-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .color-swatch.white {
+      border: 1px solid #ccc;
+    }
+
+    .color-name {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .qty-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      min-width: 85px;
+      text-align: center;
+    }
+
+    .qty-btn.selected {
+      background: var(--success);
+      color: white;
+    }
+
+    .custom-section {
+      padding: 16px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .custom-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .custom-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .custom-color-picker {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hex-input {
+      width: 100px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: monospace;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .custom-note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      z-index: 200;
+      box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .bottom-content {
+      max-width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      width: 100%;
+    }
+
+    .stats strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .actions .btn {
+      flex: 1;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .modal-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-info {
+      flex: 1;
+    }
+
+    .modal-id {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .modal-name {
+      font-size: 17px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .qty-input {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .quick-btns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .quick-btn {
+      padding: 16px 12px;
+      font-weight: 600;
+      font-size: 17px;
+    }
+
+    .modal-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .sheet {
+      background: var(--card);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sheet-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .sheet-body {
+      padding: 20px;
+    }
+
+    .export-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .option-card {
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-card:hover {
+      border-color: var(--accent);
+      background: rgba(0, 122, 255, 0.05);
+    }
+
+    .option-card.selected {
+      border-color: var(--accent);
+      background: rgba(0, 122, 255, 0.1);
+    }
+
+    .option-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .option-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .format-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .export-note {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .sheet-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+
+    .sheet-footer .btn {
+      flex: 1;
+    }
+
+    #exportSheet {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      background: white;
+      padding: 48px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 1200px;
+    }
+
+    .export-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+      letter-spacing: -0.5px;
+    }
+
+    .export-date {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 32px;
+      font-weight: 500;
+    }
+
+    .export-table {
+      border-collapse: collapse;
+      width: auto;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+
+    .export-table th,
+    .export-table td {
+      border: 1.5px solid #333;
+      padding: 12px 20px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .export-table th {
+      background: #f5f5f5;
+      font-weight: 600;
+      color: #1a1a1a;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .export-table td {
+      color: #333;
+    }
+
+    .export-columns {
+      display: flex;
+      gap: 48px;
+      align-items: flex-start;
+    }
+
+    .export-table {
+      table-layout: fixed;
+    }
+
+    .export-table th,
+    .export-table td {
+      height: 42px;
+      vertical-align: middle;
+    }
+
+
+    .export-columns .export-table {
+      flex: 0 1 auto;
+    }
+
+    .export-summary {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      display: inline-block;
+      min-width: 400px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      gap: 48px;
+    }
+
+    .summary-row:not(:last-child) {
+      border-bottom: 1px solid #dee2e6;
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+    }
+
+    .summary-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #212529;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .color-item {
+        grid-template-columns: 60px 40px 1fr 90px;
+        min-width: 80px;
+        gap: 12px;
+        padding: 12px 16px;
+      }
+
+      .custom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bottom-content {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .export-summary-list {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 2px solid #333;
+        width: fit-content;
+      }
+
+      .summary-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 40px;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .stats {
+        justify-content: space-between;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      .actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="toprow">
-        <div class="search">
-          <input id="searchInput" type="text" placeholder="Поиск по ID или названию..." />
-        </div>
-        <button class="btn" id="clearSearchBtn">Сброс</button>
+  <div class="container">
+    <div class="header">
+      <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="Поиск по ID или названию...">
+        <button class="btn" id="clearSearch">Сброс</button>
       </div>
-
-      <div class="filters">
-        <label class="switch">
-          <input id="onlySelected" type="checkbox" />
-          <span class="toggle-ui" aria-hidden="true"></span>
-          <span>Только выбранные</span>
-        </label>
+      <div class="toggle-wrapper">
+        <input type="checkbox" class="toggle-input" id="toggleSelected">
+        <label for="toggleSelected" class="toggle"></label>
+        <span class="toggle-label">Только выбранные</span>
       </div>
     </div>
 
     <div class="card">
-      <div class="grid-head">
-        <div>ID</div>
-        <div>Цвет</div>
-        <div>Название</div>
-        <div class="head-right">Выбор</div>
-      </div>
-
-      <div class="rows" id="rows"></div>
-
-      <div class="custom">
-        <p class="custom-title">Добавить кастомный цвет</p>
-
+      <div class="color-grid" id="colorGrid"></div>
+      
+      <div class="custom-section">
+        <div class="custom-title">Добавить свой цвет</div>
         <div class="custom-grid">
-          <input id="customName" type="text" placeholder="Название (например: сиреневый металлик)" />
-          <div class="custom-color">
-            <input id="customPicker" type="color" value="#9ca3af" title="Выбрать цвет" />
-            <input id="customHex" class="hex" type="text" placeholder="#RRGGBB" value="#9ca3af" />
-          </div>
-          <button class="btn primary" id="addCustomBtn">Добавить</button>
+          <input type="text" class="search-input" id="customName" placeholder="Название цвета">
+          <button class="btn btn-primary" id="addCustom">Добавить</button>
         </div>
-
         <div class="custom-note">
-          iPhone: чтобы “Сохранить изображение” и “WhatsApp” работали без ссылок — открывай сайт по HTTPS.
+          Цвет будет назначен автоматически
         </div>
       </div>
     </div>
   </div>
 
   <div class="bottom-bar">
-    <div class="bottom-inner">
-      <div class="totals">
-        <span>Итоги: выбрано цветов: <strong id="selectedCount">0</strong></span>
-        <span>общее количество: <strong id="qtyTotal">0</strong></span>
+    <div class="bottom-content">
+      <div class="stats">
+        <span>Выбрано: <strong id="selectedCount">0</strong></span>
+        <span>Количество: <strong id="totalQty">0</strong></span>
       </div>
       <div class="actions">
-        <button class="btn danger" id="clearBtn">Очистить</button>
-        <button class="btn primary" id="downloadBtn">Скачать список</button>
+        <button class="btn btn-danger" id="clearAll">Очистить</button>
+        <button class="btn btn-primary" id="exportBtn">Экспорт</button>
       </div>
     </div>
   </div>
 
-  <!-- Qty Modal -->
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-      <div class="modal-head">
-        <div class="modal-title">
-          <div class="swatch" id="modalSwatch"></div>
-          <div class="info">
-            <div class="t1" id="modalId"></div>
-            <div class="t2" id="modalName"></div>
+      <div class="modal-header">
+        <div class="modal-swatch" id="modalSwatch"></div>
+        <div class="modal-info">
+          <div class="modal-id" id="modalId">ID: 1</div>
+          <div class="modal-name" id="modalName">Цвет</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <input type="number" class="qty-input" id="qtyInput" min="0" placeholder="Количество">
+        <div class="quick-btns">
+          <button class="btn quick-btn" data-qty="1">+1</button>
+          <button class="btn quick-btn" data-qty="3">+3</button>
+          <button class="btn quick-btn" data-qty="5">+5</button>
+          <button class="btn quick-btn" data-qty="10">+10</button>
+        </div>
+        <button class="btn btn-danger" id="clearQty" style="width:100%">Очистить количество</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger hidden" id="deleteCustom">Удалить</button>
+        <button class="btn" id="closeModal">Отмена</button>
+        <button class="btn btn-success" id="saveQty">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="sheetOverlay">
+    <div class="sheet">
+      <div class="sheet-header">Экспорт списка</div>
+      <div class="sheet-body">
+        <div class="export-options">
+          <div class="option-card" data-mode="v1">
+            <div class="option-title">Только выбранные</div>
+            <div class="option-desc">Экспорт выбранных цветов (до 33 в колонке)</div>
+          </div>
+          <div class="option-card" data-mode="v2">
+            <div class="option-title">Все цвета</div>
+            <div class="option-desc">Полный список в двух колонках</div>
           </div>
         </div>
+        <select class="format-select" id="formatSelect">
+          <option value="photo">Изображение (JPG)</option>
+          <option value="pdf">Документ (PDF)</option>
+        </select>
+        <div class="export-note">Выберите режим экспорта выше</div>
       </div>
-
-      <div class="modal-body">
-        <input id="modalQty" type="number" min="0" step="1" inputmode="numeric" placeholder="Количество" />
-
-        <div class="quick-grid">
-          <button class="btn" id="q1">+1</button>
-          <button class="btn" id="q5">+5</button>
-          <button class="btn" id="q3">+3</button>
-          <button class="btn" id="q10">+10</button>
-        </div>
-
-        <button class="btn danger" id="q0">Очистить количество</button>
-      </div>
-
-      <div class="modal-foot">
-        <button class="btn danger" id="deleteColorBtn" style="display:none;">Удалить цвет</button>
-        <button class="btn" id="closeModalBtn">Закрыть</button>
-        <button class="btn primary" id="saveBtn">Сохранить</button>
+      <div class="sheet-footer">
+        <button class="btn" id="closeSheet">Отмена</button>
+        <button class="btn btn-primary" id="saveExport" disabled>Сохранить</button>
       </div>
     </div>
   </div>
 
-  <!-- Download Action Sheet -->
-  <div class="sheet" id="sheet">
-    <div class="sheet-card">
-      <div class="sheet-head">Экспорт</div>
-      <div class="sheet-body">
-        <div class="export-modes">
-          <label class="check-row">
-            <input id="modeV1" type="checkbox" />
-            <span class="check-ui" aria-hidden="true"></span>
-            <span class="check-text">
-              <strong>V1</strong>
-              <em>Только выбранные</em>
-            </span>
-          </label>
-          <label class="check-row">
-          <input id="modeV2" type="checkbox" />
-          <span class="check-ui" aria-hidden="true"></span>
-          <span class="check-text">
-            <strong>V2</strong>
-            <em>Все цвета, разделенные на две колонки</em>
-          </span>
-        </label>
-      </div>
-
-        <label class="format-row">
-          <span>Формат</span>
-          <select id="exportFormat">
-            <option value="photo">Фото (JPG)</option>
-            <option value="pdf">PDF</option>
-          </select>
-        </label>
-
-        <div class="export-note">Чтобы скачать, выберите V1 или V2.</div>
-      </div>
-      <div class="sheet-foot">
-        <div class="foot-actions">
-          <button class="btn" id="closeSheetBtn">Закрыть</button>
-          <button class="btn primary" id="saveExportBtn" disabled>Сохранить</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Export (hidden generator) -->
   <div id="exportSheet" aria-hidden="true">
-    <p class="title" id="exportTitle">Список</p>
-    <p class="date" id="exportDate"></p>
-
-    <div id="exportSelectedSection" class="export-section">
-      <table id="exportTableSelected">
-        <thead>
-          <tr>
-            <th style="width:12%;">ID</th>
-            <th style="width:58%;">Название</th>
-            <th style="width:30%;">Кол-во</th>
-          </tr>
-        </thead>
-        <tbody id="exportBodySelected"></tbody>
-      </table>
-    </div>
-
-    <div id="exportAllSection" class="export-section">
-      <div class="all-grid">
-        <table id="exportTableLeft">
-          <thead>
-            <tr>
-              <th style="width:18%;">ID</th>
-              <th style="width:52%;">Название</th>
-              <th style="width:30%;">Кол-во</th>
-            </tr>
-          </thead>
-          <tbody id="exportBodyLeft"></tbody>
-        </table>
-
-        <table id="exportTableRight">
-          <thead>
-            <tr>
-              <th style="width:18%;">ID</th>
-              <th style="width:52%;">Название</th>
-              <th style="width:30%;">Кол-во</th>
-            </tr>
-          </thead>
-          <tbody id="exportBodyRight"></tbody>
-        </table>
+    <div class="export-title">Заказ</div>
+    <div class="export-date" id="exportDate"></div>
+    <div id="exportContent"></div>
+    <div class="export-summary-list">
+      <div class="summary-line">
+        <span>Количество цветов</span>
+        <strong id="summaryColors">0</strong>
       </div>
-    </div>
-
-    <div class="export-summary" id="exportSummary">
-      ИТОГИ: Количество цветов: <span id="exportSummaryColorCount">0</span> общее количество:
-      <span id="exportSummaryQtyTotal">0</span>
-    </div>
+      <div class="summary-line">
+        <span>Общее количество</span>
+        <strong id="summaryQty">0</strong>
+      </div>
+     </div>  
   </div>
+  <script>
+    const BASE_COLORS = [
+      { id: 1, name: "светлая роза", hex: "#f6b7c8" },
+      { id: 2, name: "голубой", hex: "#6ec6ff" },
+      { id: 3, name: "василек", hex: "#2f5bff" },
+      { id: 4, name: "молочка", hex: "#f4f1e8" },
+      { id: 5, name: "черная", hex: "#111111" },
+      { id: 6, name: "аспарагус", hex: "#6a8f6a" },
+      { id: 7, name: "весна", hex: "#7fdc7a" },
+      { id: 8, name: "айсберг", hex: "#d7f3f7" },
+      { id: 9, name: "попугай", hex: "#22c55e" },
+      { id: 10, name: "бордо", hex: "#6f1d2a" },
+      { id: 11, name: "свет носог", hex: "#bfc7d1" },
+      { id: 12, name: "камелия", hex: "#ff6b8a" },
+      { id: 13, name: "мрамор", hex: "#d9d9d9" },
+      { id: 14, name: "777", hex: "#7a7a7a" },
+      { id: 15, name: "доллар", hex: "#8bd18b" },
+      { id: 16, name: "фламинго роза", hex: "#ff7aa2" },
+      { id: 17, name: "ежевика", hex: "#3b1b4a" },
+      { id: 18, name: "дымок", hex: "#a9b0b8" },
+      { id: 19, name: "карамель", hex: "#c58b5a" },
+      { id: 20, name: "вишня", hex: "#8b1e3f" },
+      { id: 21, name: "полынь", hex: "#9aa88f" },
+      { id: 22, name: "орех", hex: "#8b6b4a" },
+      { id: 23, name: "брусника", hex: "#b3204d" },
+      { id: 24, name: "малина", hex: "#d81b60" },
+      { id: 25, name: "матроска", hex: "#1f3a8a" },
+      { id: 26, name: "яблоко", hex: "#44c06a" },
+      { id: 27, name: "Темно-носочный", hex: "#2b2f3a" },
+      { id: 28, name: "бирюза", hex: "#22b8b8" },
+      { id: 29, name: "кофе", hex: "#6f4e37" },
+      { id: 30, name: "ультра марин", hex: "#1f2a92" },
+      { id: 31, name: "хакки", hex: "#6b7b3a" },
+      { id: 32, name: "клевер", hex: "#2f7a3d" },
+      { id: 33, name: "шампанский", hex: "#f3e5c7" },
+      { id: 34, name: "светлая сирень", hex: "#d8c5ff" },
+      { id: 35, name: "колокольчик", hex: "#7c83ff" },
+      { id: 36, name: "сталь", hex: "#6b7280" },
+      { id: 37, name: "небо", hex: "#87ceeb" },
+      { id: 38, name: "красный терракот", hex: "#b7412c" },
+      { id: 39, name: "оранжевый", hex: "#ff7a00" },
+      { id: 40, name: "ангора", hex: "#d7c8b5" },
+      { id: 41, name: "фуксия", hex: "#ff00a8" },
+      { id: 42, name: "изумруд", hex: "#0f9d58" },
+      { id: 43, name: "персик", hex: "#ffb07c" },
+      { id: 44, name: "лимон", hex: "#ffe44d" },
+      { id: 45, name: "горчица", hex: "#caa300" },
+      { id: 46, name: "супер белый", hex: "#ffffff" },
+      { id: 47, name: "бежевый", hex: "#e6d2b5" },
+      { id: 48, name: "фисташка", hex: "#b8e3b0" },
+      { id: 49, name: "желтый", hex: "#ffd500" },
+      { id: 50, name: "шоколад", hex: "#3f2a1a" },
+      { id: 51, name: "темно-синий", hex: "#0b1f4b" },
+      { id: 52, name: "слоновая кость", hex: "#f7f0d9" },
+      { id: 53, name: "нежность", hex: "#ffd6e7" },
+      { id: 54, name: "джинсы", hex: "#2b6cb0" },
+      { id: 55, name: "бутылка", hex: "#0b6b4f" },
+      { id: 56, name: "мак красный", hex: "#e10600" },
+      { id: 57, name: "чернило(фиолетовое)", hex: "#3a1b5a" },
+      { id: 58, name: "морская вода", hex: "#37b7c3" },
+      { id: 59, name: "лиловый", hex: "#b07ccf" },
+      { id: 60, name: "темный терракот", hex: "#7a2d22" },
+      { id: 61, name: "облепиха", hex: "#ff8a2a" },
+      { id: 62, name: "алый(сочный)", hex: "#ff1e1e" },
+      { id: 63, name: "лагуна", hex: "#1aa6b7" },
+      { id: 64, name: "пепельный", hex: "#b8b2a7" }
+    ];
 
-  <script src="script.js"></script>
+    const LS_CUSTOM = 'custom_colors_v2';
+    let currentItem = null;
+    let exportMode = null;
+
+    const els = {
+      searchInput: document.getElementById('searchInput'),
+      clearSearch: document.getElementById('clearSearch'),
+      toggleSelected: document.getElementById('toggleSelected'),
+      colorGrid: document.getElementById('colorGrid'),
+      customName: document.getElementById('customName'),
+      addCustom: document.getElementById('addCustom'),
+      selectedCount: document.getElementById('selectedCount'),
+      totalQty: document.getElementById('totalQty'),
+      clearAll: document.getElementById('clearAll'),
+      exportBtn: document.getElementById('exportBtn'),
+      modalOverlay: document.getElementById('modalOverlay'),
+      modalSwatch: document.getElementById('modalSwatch'),
+      modalId: document.getElementById('modalId'),
+      modalName: document.getElementById('modalName'),
+      qtyInput: document.getElementById('qtyInput'),
+      clearQty: document.getElementById('clearQty'),
+      deleteCustom: document.getElementById('deleteCustom'),
+      closeModal: document.getElementById('closeModal'),
+      saveQty: document.getElementById('saveQty'),
+      sheetOverlay: document.getElementById('sheetOverlay'),
+      closeSheet: document.getElementById('closeSheet'),
+      saveExport: document.getElementById('saveExport'),
+      formatSelect: document.getElementById('formatSelect'),
+      exportDate: document.getElementById('exportDate'),
+      exportContent: document.getElementById('exportContent'),
+      summaryColors: document.getElementById('summaryColors'),
+      summaryQty: document.getElementById('summaryQty')
+    };
+
+    function loadCustom() {
+      try {
+        const data = localStorage.getItem(LS_CUSTOM);
+        return data ? JSON.parse(data) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCustom(arr) {
+      localStorage.setItem(LS_CUSTOM, JSON.stringify(arr));
+    }
+
+    function getAllColors() {
+      return [...BASE_COLORS, ...loadCustom()].sort((a, b) => a.id - b.id);
+    }
+
+    function getQty(id) {
+      const val = localStorage.getItem(`qty_${id}`);
+      return parseInt(val || '0', 10);
+    }
+
+    function setQty(id, qty) {
+      if (qty > 0) {
+        localStorage.setItem(`qty_${id}`, String(qty));
+      } else {
+        localStorage.removeItem(`qty_${id}`);
+      }
+    }
+
+    function isWhite(hex) {
+      return hex.toLowerCase() === '#ffffff';
+    }
+
+    function normalize(str) {
+      return String(str || '').toLowerCase().trim().replace(/ё/g, 'е');
+    }
+
+    function matches(item, query) {
+      if (!query) return true;
+      const nq = normalize(query);
+      return String(item.id).includes(nq) || normalize(item.name).includes(nq);
+    }
+
+    function updateStats() {
+      const colors = getAllColors();
+      let selected = 0, total = 0;
+      colors.forEach(c => {
+        const qty = getQty(c.id);
+        if (qty > 0) {
+          selected++;
+          total += qty;
+        }
+      });
+      els.selectedCount.textContent = selected;
+      els.totalQty.textContent = total;
+    }
+
+    function render() {
+      const query = els.searchInput.value.trim();
+      const onlySelected = els.toggleSelected.checked;
+      let colors = getAllColors().filter(c => matches(c, query));
+      if (onlySelected) colors = colors.filter(c => getQty(c.id) > 0);
+
+      els.colorGrid.innerHTML = '';
+      colors.forEach(color => {
+        const qty = getQty(color.id);
+        const item = document.createElement('div');
+        item.className = 'color-item';
+        item.onclick = () => openModal(color);
+
+        const id = document.createElement('div');
+        id.className = 'color-id';
+        id.textContent = color.id;
+
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch' + (isWhite(color.hex) ? ' white' : '');
+        swatch.style.background = color.hex;
+
+        const name = document.createElement('div');
+        name.className = 'color-name';
+        name.textContent = color.name;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn qty-btn' + (qty > 0 ? ' selected' : '');
+        btn.textContent = qty > 0 ? String(qty) : 'Выбрать';
+
+        item.append(id, swatch, name, btn);
+        els.colorGrid.appendChild(item);
+      });
+
+      updateStats();
+    }
+
+    function openModal(color) {
+      currentItem = color;
+      els.modalSwatch.style.background = color.hex;
+      els.modalSwatch.className = 'modal-swatch' + (isWhite(color.hex) ? ' white' : '');
+      els.modalId.textContent = `ID: ${color.id}`;
+      els.modalName.textContent = color.name;
+      const qty = getQty(color.id);
+      els.qtyInput.value = qty > 0 ? String(qty) : '';
+      els.deleteCustom.classList.toggle('hidden', color.id <= 64);
+      els.modalOverlay.style.display = 'flex';
+      setTimeout(() => els.qtyInput.focus(), 100);
+    }
+
+    function closeModal() {
+      els.modalOverlay.style.display = 'none';
+      currentItem = null;
+    }
+
+    function saveModal() {
+      if (!currentItem) return;
+      const qty = Math.max(0, parseInt(els.qtyInput.value || '0', 10));
+      setQty(currentItem.id, qty);
+      closeModal();
+      render();
+    }
+
+    function addCustomColor() {
+      const name = els.customName.value.trim();
+      if (!name) {
+        els.customName.focus();
+        return;
+      }
+      // Generate random pastel color
+      const hue = Math.floor(Math.random() * 360);
+      const saturation = 60 + Math.floor(Math.random() * 30);
+      const lightness = 65 + Math.floor(Math.random() * 20);
+      
+      // Convert HSL to HEX
+      const h = hue / 360;
+      const s = saturation / 100;
+      const l = lightness / 100;
+      
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      
+      const toHex = x => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      
+      const hex = '#' + toHex(r) + toHex(g) + toHex(b);
+      
+      const customs = loadCustom();
+      const maxId = getAllColors().reduce((max, c) => Math.max(max, c.id), 0);
+      const newColor = { id: maxId + 1, name, hex: hex.toUpperCase() };
+      customs.push(newColor);
+      saveCustom(customs);
+      els.customName.value = '';
+      render();
+      openModal(newColor);
+    }
+
+    function deleteCustomColor() {
+      if (!currentItem || currentItem.id <= 64) return;
+      if (!confirm('Удалить этот цвет?')) return;
+      const customs = loadCustom().filter(c => c.id !== currentItem.id);
+      saveCustom(customs);
+      localStorage.removeItem(`qty_${currentItem.id}`);
+      closeModal();
+      render();
+    }
+
+    function buildExportTable(colors) {
+      const table = document.createElement('table');
+      table.className = 'export-table';
+      
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      ['ID', 'Название', 'Кол-во'].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      colors.forEach(c => {
+        const row = document.createElement('tr');
+        const tdId = document.createElement('td');
+        tdId.textContent = c.id;
+        const tdName = document.createElement('td');
+        tdName.textContent = c.name;
+        const tdQty = document.createElement('td');
+        tdQty.textContent = c.qty || '';
+        row.append(tdId, tdName, tdQty);
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+
+      return table;
+    }
+
+    function buildExportContent(mode) {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const dateStr = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      els.exportDate.textContent = `Дата: ${dateStr}`;
+      els.exportContent.innerHTML = '';
+
+      const allColors = getAllColors();
+      const selected = allColors.filter(c => getQty(c.id) > 0).map(c => ({
+        ...c,
+        qty: getQty(c.id)
+      }));
+
+      const colorCount = selected.length;
+      const qtyTotal = selected.reduce((sum, c) => sum + c.qty, 0);
+      els.summaryColors.textContent = colorCount;
+      els.summaryQty.textContent = qtyTotal;
+
+      if (mode === 'v1') {
+        // V1: Only selected, 33 per column
+        if (selected.length === 0) {
+          els.exportContent.textContent = 'Нет данных';
+          return;
+        }
+
+        if (selected.length <= 33) {
+          // Single column
+          els.exportContent.appendChild(buildExportTable(selected));
+        } else {
+          // Two columns
+          const col1 = selected.slice(0, 33);
+          const col2 = selected.slice(33);
+          const container = document.createElement('div');
+          container.className = 'export-columns';
+          container.appendChild(buildExportTable(col1));
+          container.appendChild(buildExportTable(col2));
+          els.exportContent.appendChild(container);
+        }
+      } else if (mode === 'v2') {
+        // V2: All colors in two columns
+        const withQty = allColors.map(c => ({ ...c, qty: getQty(c.id) }));
+        const half = Math.ceil(withQty.length / 2);
+        const col1 = withQty.slice(0, half);
+        const col2 = withQty.slice(half);
+        const container = document.createElement('div');
+        container.className = 'export-columns';
+        container.appendChild(buildExportTable(col1));
+        container.appendChild(buildExportTable(col2));
+        els.exportContent.appendChild(container);
+      }
+    }
+
+    async function exportAsImage() {
+      buildExportContent(exportMode);
+      const sheet = document.getElementById('exportSheet');
+      const canvas = await html2canvas(sheet, {
+        scale: 2,
+        backgroundColor: '#ffffff'
+      });
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+      
+      if (navigator.share && navigator.canShare) {
+        try {
+          const file = new File([blob], 'colors.jpg', { type: 'image/jpeg' });
+          await navigator.share({
+            title: 'Список цветов',
+            files: [file]
+          });
+          return;
+        } catch (e) {}
+      }
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'colors.jpg';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportAsPDF() {
+      buildExportContent(exportMode);
+      const sheet = document.getElementById('exportSheet');
+      const canvas = await html2canvas(sheet, {
+        scale: 2,
+        backgroundColor: '#ffffff'
+      });
+      
+      const { jsPDF } = window.jspdf;
+      const imgData = canvas.toDataURL('image/png');
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      
+      const pdf = new jsPDF({
+        orientation: imgW >= imgH ? 'landscape' : 'portrait',
+        unit: 'pt',
+        format: 'a4'
+      });
+      
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const ratio = Math.min(pageW / imgW, pageH / imgH);
+      const w = imgW * ratio;
+      const h = imgH * ratio;
+      const x = (pageW - w) / 2;
+      const y = (pageH - h) / 2;
+      
+      pdf.addImage(imgData, 'PNG', x, y, w, h);
+      pdf.save('colors.pdf');
+    }
+
+    // Event listeners
+    els.searchInput.addEventListener('input', render);
+    els.clearSearch.addEventListener('click', () => {
+      els.searchInput.value = '';
+      render();
+    });
+    els.toggleSelected.addEventListener('change', render);
+
+    els.addCustom.addEventListener('click', addCustomColor);
+    els.customName.addEventListener('keypress', e => {
+      if (e.key === 'Enter') addCustomColor();
+    });
+
+    els.clearAll.addEventListener('click', () => {
+      if (!confirm('Очистить все количества?')) return;
+      getAllColors().forEach(c => localStorage.removeItem(`qty_${c.id}`));
+      render();
+    });
+
+    els.closeModal.addEventListener('click', closeModal);
+    els.saveQty.addEventListener('click', saveModal);
+    els.qtyInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') saveModal();
+    });
+
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const add = parseInt(btn.dataset.qty, 10);
+        const current = parseInt(els.qtyInput.value || '0', 10);
+        els.qtyInput.value = current + add;
+      });
+    });
+
+    els.clearQty.addEventListener('click', () => {
+      if (!currentItem) return;
+      els.qtyInput.value = '';
+      setQty(currentItem.id, 0);
+    });
+
+    els.deleteCustom.addEventListener('click', deleteCustomColor);
+
+    els.modalOverlay.addEventListener('click', e => {
+      if (e.target === els.modalOverlay) closeModal();
+    });
+
+    els.exportBtn.addEventListener('click', () => {
+      exportMode = null;
+      document.querySelectorAll('.option-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      els.saveExport.disabled = true;
+      els.sheetOverlay.style.display = 'flex';
+    });
+
+    els.closeSheet.addEventListener('click', () => {
+      els.sheetOverlay.style.display = 'none';
+    });
+
+    els.sheetOverlay.addEventListener('click', e => {
+      if (e.target === els.sheetOverlay) {
+        els.sheetOverlay.style.display = 'none';
+      }
+    });
+
+    document.querySelectorAll('.option-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        exportMode = card.dataset.mode;
+        els.saveExport.disabled = false;
+      });
+    });
+
+    els.saveExport.addEventListener('click', async () => {
+      if (!exportMode) return;
+      const format = els.formatSelect.value;
+      try {
+        if (format === 'photo') {
+          await exportAsImage();
+        } else {
+          await exportAsPDF();
+        }
+      } finally {
+        els.sheetOverlay.style.display = 'none';
+      }
+    });
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (els.modalOverlay.style.display === 'flex') closeModal();
+        if (els.sheetOverlay.style.display === 'flex') els.sheetOverlay.style.display = 'none';
+      }
+    });
+
+    render();
+  </script>
 </body>
 </html>
