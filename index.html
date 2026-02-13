@@ -861,7 +861,8 @@
       { id: 62, name: "алый(сочный)", hex: "#ff1e1e" },
       { id: 63, name: "лагуна", hex: "#1aa6b7" },
       { id: "64/21", name: "пепельный", hex: "#b8b2a7" },
-      { id: 65, name: "апельсин", hex: "#FF8C00" }
+      { id: 65, name: "апельсин", hex: "#FF8C00" },
+      { id: 66, name: "Новый хаки", hex: "#6C7453" }
     ];
 
     const LS_CUSTOM = 'custom_colors_v2';
@@ -1072,7 +1073,7 @@
     }
 
     function deleteCustomColor() {
-      if (!currentItem || currentItem.id <= 65 || currentItem.id === "64/21") return;
+      if (!currentItem || currentItem.id <= 66 || currentItem.id === "64/21") return;
       if (!confirm('Удалить этот цвет?')) return;
       const customs = loadCustom().filter(c => c.id !== currentItem.id);
       saveCustom(customs);
