@@ -860,7 +860,8 @@
       { id: 61, name: "облепиха", hex: "#ff8a2a" },
       { id: 62, name: "алый(сочный)", hex: "#ff1e1e" },
       { id: 63, name: "лагуна", hex: "#1aa6b7" },
-      { id: 64, name: "пепельный", hex: "#b8b2a7" }
+      { id: "64/21", name: "пепельный", hex: "#b8b2a7" },
+      { id: 65, name: "апельсин", hex: "#FF8C00" }
     ];
 
     const LS_CUSTOM = 'custom_colors_v2';
@@ -999,7 +1000,7 @@
       els.modalName.textContent = color.name;
       const qty = getQty(color.id);
       els.qtyInput.value = qty > 0 ? String(qty) : '';
-      els.deleteCustom.classList.toggle('hidden', color.id <= 64);
+      els.deleteCustom.classList.toggle('hidden', color.id <= 65 || color.id === "64/21");
       els.modalOverlay.style.display = 'flex';
       setTimeout(() => els.qtyInput.focus(), 100);
     }
@@ -1071,7 +1072,7 @@
     }
 
     function deleteCustomColor() {
-      if (!currentItem || currentItem.id <= 64) return;
+      if (!currentItem || currentItem.id <= 65 || currentItem.id === "64/21") return;
       if (!confirm('Удалить этот цвет?')) return;
       const customs = loadCustom().filter(c => c.id !== currentItem.id);
       saveCustom(customs);
