@@ -206,6 +206,7 @@
       font-weight: 600;
       color: var(--text-secondary);
       font-size: 15px;
+      min-width: 20px;
     }
 
     .color-swatch {
@@ -219,6 +220,22 @@
     .color-swatch.white {
       border: 1px solid #ccc;
     }
+
+    /* СТИЛИ ДЛЯ КРЕСТИКА КАСТОМНЫХ ЦВЕТОВ */
+    .custom-cross {
+      background: #ffffff !important;
+      position: relative;
+      border: 1px solid #ccc;
+    }
+    .custom-cross::before, .custom-cross::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 70%; height: 2px;
+      background-color: var(--danger);
+    }
+    .custom-cross::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .custom-cross::after { transform: translate(-50%, -50%) rotate(-45deg); }
 
     .color-name {
       font-size: 16px;
@@ -259,30 +276,6 @@
       grid-template-columns: 1fr;
       gap: 10px;
       align-items: stretch;
-    }
-
-    .custom-color-picker {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    input[type="color"] {
-      width: 48px;
-      height: 48px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .hex-input {
-      width: 100px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-family: monospace;
-      font-size: 14px;
-      text-transform: uppercase;
     }
 
     .custom-note {
@@ -706,9 +699,6 @@
           <input type="text" class="search-input" id="customName" placeholder="Название цвета">
           <button class="btn btn-primary" id="addCustom">Добавить</button>
         </div>
-        <div class="custom-note">
-          Цвет будет назначен автоматически
-        </div>
       </div>
     </div>
   </div>
@@ -746,7 +736,7 @@
         <button class="btn btn-danger" id="clearQty" style="width:100%">Очистить количество</button>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-danger hidden" id="deleteCustom">Удалить</button>
+        <button class="btn btn-danger hidden" id="deleteCustom">Удалить цвет</button>
         <button class="btn" id="closeModal">Отмена</button>
         <button class="btn btn-success" id="saveQty">Сохранить</button>
       </div>
@@ -767,6 +757,10 @@
             <div class="option-desc">Полный список в двух колонках</div>
           </div>
         </div>
+        
+        <!-- ПОЛЕ ДЛЯ НАЗВАНИЯ ЭКСПОРТА -->
+        <input type="text" class="search-input" id="exportTitleInput" value="ЗАКАЗ" placeholder="Название (по умолчанию ЗАКАЗ)" style="margin-bottom: 12px; width: 100%;">
+        
         <select class="format-select" id="formatSelect">
           <option value="photo">Изображение (JPG)</option>
           <option value="pdf">Документ (PDF)</option>
@@ -893,6 +887,7 @@
       closeSheet: document.getElementById('closeSheet'),
       saveExport: document.getElementById('saveExport'),
       formatSelect: document.getElementById('formatSelect'),
+      exportTitleInput: document.getElementById('exportTitleInput'),
       exportDate: document.getElementById('exportDate'),
       exportContent: document.getElementById('exportContent'),
       summaryColors: document.getElementById('summaryColors'),
@@ -912,8 +907,9 @@
       localStorage.setItem(LS_CUSTOM, JSON.stringify(arr));
     }
 
+    // ИЗМЕНЕНИЕ: Убрали сортировку .sort(), чтобы кастомные цвета оставались строго внизу списка
     function getAllColors() {
-      return [...BASE_COLORS, ...loadCustom()].sort((a, b) => a.id - b.id);
+      return [...BASE_COLORS, ...loadCustom()];
     }
 
     function getQty(id) {
@@ -972,11 +968,17 @@
 
         const id = document.createElement('div');
         id.className = 'color-id';
-        id.textContent = color.id;
+        // ИЗМЕНЕНИЕ: У кастомных цветов визуально скрываем ID
+        id.textContent = color.isCustom ? '' : color.id;
 
         const swatch = document.createElement('div');
-        swatch.className = 'color-swatch' + (isWhite(color.hex) ? ' white' : '');
-        swatch.style.background = color.hex;
+        // ИЗМЕНЕНИЕ: Добавляем крестик для кастомных цветов
+        if (color.isCustom) {
+          swatch.className = 'color-swatch custom-cross';
+        } else {
+          swatch.className = 'color-swatch' + (isWhite(color.hex) ? ' white' : '');
+          swatch.style.background = color.hex;
+        }
 
         const name = document.createElement('div');
         name.className = 'color-name';
@@ -995,13 +997,24 @@
 
     function openModal(color) {
       currentItem = color;
-      els.modalSwatch.style.background = color.hex;
-      els.modalSwatch.className = 'modal-swatch' + (isWhite(color.hex) ? ' white' : '');
-      els.modalId.textContent = `ID: ${color.id}`;
+      
+      if (color.isCustom) {
+        els.modalSwatch.className = 'modal-swatch custom-cross';
+        els.modalSwatch.style.background = '';
+      } else {
+        els.modalSwatch.className = 'modal-swatch' + (isWhite(color.hex) ? ' white' : '');
+        els.modalSwatch.style.background = color.hex;
+      }
+      
+      // ИЗМЕНЕНИЕ: В модалке тоже не показываем ID у кастомных цветов
+      els.modalId.textContent = color.isCustom ? '' : `ID: ${color.id}`;
       els.modalName.textContent = color.name;
       const qty = getQty(color.id);
       els.qtyInput.value = qty > 0 ? String(qty) : '';
-      els.deleteCustom.classList.toggle('hidden', color.id <= 65 || color.id === "64/21");
+      
+      // ИЗМЕНЕНИЕ: Кнопка удаления показывается ТОЛЬКО для кастомных цветов
+      els.deleteCustom.classList.toggle('hidden', !color.isCustom);
+      
       els.modalOverlay.style.display = 'flex';
       setTimeout(() => els.qtyInput.focus(), 100);
     }
@@ -1025,46 +1038,17 @@
         els.customName.focus();
         return;
       }
-      // Generate random pastel color
-      const hue = Math.floor(Math.random() * 360);
-      const saturation = 60 + Math.floor(Math.random() * 30);
-      const lightness = 65 + Math.floor(Math.random() * 20);
-      
-      // Convert HSL to HEX
-      const h = hue / 360;
-      const s = saturation / 100;
-      const l = lightness / 100;
-      
-      const hue2rgb = (p, q, t) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-        return p;
-      };
-      
-      let r, g, b;
-      if (s === 0) {
-        r = g = b = l;
-      } else {
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-      }
-      
-      const toHex = x => {
-        const hex = Math.round(x * 255).toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
-      };
-      
-      const hex = '#' + toHex(r) + toHex(g) + toHex(b);
       
       const customs = loadCustom();
-      const maxId = getAllColors().reduce((max, c) => Math.max(max, c.id), 0);
-      const newColor = { id: maxId + 1, name, hex: hex.toUpperCase() };
+      
+      // ИЗМЕНЕНИЕ: Уникальный системный ID на основе времени, чтобы избежать багов с NaN и дублирования
+      const newColor = { 
+        id: 'custom_' + Date.now(), 
+        name: name, 
+        hex: '#ffffff', // Фон всегда белый
+        isCustom: true  // Флаг, что цвет кастомный
+      };
+      
       customs.push(newColor);
       saveCustom(customs);
       els.customName.value = '';
@@ -1073,11 +1057,14 @@
     }
 
     function deleteCustomColor() {
-      if (!currentItem || currentItem.id <= 66 || currentItem.id === "64/21") return;
-      if (!confirm('Удалить этот цвет?')) return;
+      if (!currentItem || !currentItem.isCustom) return;
+      if (!confirm('Удалить этот цвет навсегда?')) return;
+      
+      // ИЗМЕНЕНИЕ: Полное удаление кастомного цвета из списка и очистка его количества
       const customs = loadCustom().filter(c => c.id !== currentItem.id);
       saveCustom(customs);
       localStorage.removeItem(`qty_${currentItem.id}`);
+      
       closeModal();
       render();
     }
@@ -1100,7 +1087,8 @@
       colors.forEach(c => {
         const row = document.createElement('tr');
         const tdId = document.createElement('td');
-        tdId.textContent = c.id;
+        // ИЗМЕНЕНИЕ: В таблице экспорта ID у кастомных цветов тоже будет пустым
+        tdId.textContent = c.isCustom ? '' : c.id;
         const tdName = document.createElement('td');
         tdName.textContent = c.name;
         const tdQty = document.createElement('td');
@@ -1118,6 +1106,11 @@
       const pad = n => String(n).padStart(2, '0');
       const dateStr = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
       els.exportDate.textContent = `Дата: ${dateStr}`;
+      
+      // ИЗМЕНЕНИЕ: Подставляем текст заголовка из поля ввода (или ЗАКАЗ по умолчанию)
+      const titleText = els.exportTitleInput ? (els.exportTitleInput.value.trim() || 'ЗАКАЗ') : 'ЗАКАЗ';
+      document.querySelector('.export-title').textContent = titleText;
+      
       els.exportContent.innerHTML = '';
 
       const allColors = getAllColors();
@@ -1132,17 +1125,14 @@
       els.summaryQty.textContent = qtyTotal;
 
       if (mode === 'v1') {
-        // V1: Only selected, 33 per column
         if (selected.length === 0) {
           els.exportContent.textContent = 'Нет данных';
           return;
         }
 
         if (selected.length <= 33) {
-          // Single column
           els.exportContent.appendChild(buildExportTable(selected));
         } else {
-          // Two columns
           const col1 = selected.slice(0, 33);
           const col2 = selected.slice(33);
           const container = document.createElement('div');
@@ -1152,7 +1142,6 @@
           els.exportContent.appendChild(container);
         }
       } else if (mode === 'v2') {
-        // V2: All colors in two columns
         const withQty = allColors.map(c => ({ ...c, qty: getQty(c.id) }));
         const half = Math.ceil(withQty.length / 2);
         const col1 = withQty.slice(0, half);
